@@ -36,12 +36,13 @@ DJANGO_APPS = [
 ]
 
 LOCAL_APPS = [
-    'apps.user'
-    'apps.recipes'
+    'apps.user',
+    'apps.recipes',
+    'apps.plan'
 ]
 
 EXTERNAL_APPS = [
-   'djangorestframework'
+   'rest_framework'
 ]
 
 INSTALLED_APPS = DJANGO_APPS + LOCAL_APPS + EXTERNAL_APPS
