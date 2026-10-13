@@ -22,8 +22,9 @@ class Ingredient(models.Model):
     
     
 class Recipe_Ingredient(models.Model):
-    recipe = models.ForeignKey(Recipe, on_delete=models.CASCADE)
-    ingredient = models.ForeignKey(Ingredient, on_delete=models.CASCADE)
+    recipe = models.ForeignKey(Recipe, on_delete=models.CASCADE, related_name="recipes")
+    ingredient = models.ForeignKey(Ingredient, on_delete=models.CASCADE, related_name="ingredient")
+    quantity = models.PositiveIntegerField(help_text="Cantidad de recetas ingredientes")
     
     def __str__(self):
         return f"{self.recipe}:{self.ingredient}"
