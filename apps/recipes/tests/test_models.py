@@ -1,7 +1,7 @@
 from django.db import IntegrityError, transaction
 from django.test import TestCase
 
-from apps.recipes.models import Ingredient, Recipe, Recipe_Ingredient
+from apps.recipes.models import Ingredient, Recipe, RecipeIngredient
 
 
 class RecipeModelTests(TestCase):
@@ -13,10 +13,10 @@ class RecipeModelTests(TestCase):
         cls.egg = Ingredient.objects.create(name="Huevo", unit="unidades")
 
     def test_duplicate_recipe_ingredient_is_rejected(self):
-        Recipe_Ingredient.objects.create(recipe=self.recipe, ingredient=self.egg, quantity=4)
+        RecipeIngredient.objects.create(recipe=self.recipe, ingredient=self.egg, quantity=4)
         with self.assertRaises(IntegrityError):
             with transaction.atomic():
-                Recipe_Ingredient.objects.create(
+                RecipeIngredient.objects.create(
                     recipe=self.recipe, ingredient=self.egg, quantity=2
                 )
 
@@ -24,6 +24,6 @@ class RecipeModelTests(TestCase):
         omelette = Recipe.objects.create(
             name="Omelette", instructions="Cuajar huevos.", prep_time=0.2, servings=2
         )
-        Recipe_Ingredient.objects.create(recipe=self.recipe, ingredient=self.egg, quantity=4)
-        Recipe_Ingredient.objects.create(recipe=omelette, ingredient=self.egg, quantity=2)
-        self.assertEqual(Recipe_Ingredient.objects.count(), 2)
+        RecipeIngredient.objects.create(recipe=self.recipe, ingredient=self.egg, quantity=4)
+        RecipeIngredient.objects.create(recipe=omelette, ingredient=self.egg, quantity=2)
+        self.assertEqual(RecipeIngredient.objects.count(), 2)

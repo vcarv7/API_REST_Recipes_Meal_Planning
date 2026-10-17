@@ -1,6 +1,6 @@
 from rest_framework import serializers
 
-from apps.recipes.models import Ingredient, Recipe, Recipe_Ingredient
+from apps.recipes.models import Ingredient, Recipe, RecipeIngredient
 
 
 class IngredientSerializer(serializers.ModelSerializer):
@@ -25,7 +25,7 @@ class RecipeIngredientSerializer(serializers.ModelSerializer):
     quantity = serializers.IntegerField(min_value=1)
 
     class Meta:
-        model = Recipe_Ingredient
+        model = RecipeIngredient
         fields = ["id", "ingredient", "ingredient_id", "quantity"]
 
     def validate(self, attrs):
@@ -33,7 +33,7 @@ class RecipeIngredientSerializer(serializers.ModelSerializer):
         ingredient = attrs.get("ingredient") or (self.instance.ingredient if self.instance else None)
         if recipe is None or ingredient is None:
             return attrs
-        duplicates = Recipe_Ingredient.objects.filter(recipe=recipe, ingredient=ingredient)
+        duplicates = RecipeIngredient.objects.filter(recipe=recipe, ingredient=ingredient)
         if self.instance is not None:
             duplicates = duplicates.exclude(pk=self.instance.pk)
         if duplicates.exists():

@@ -5,7 +5,7 @@ from rest_framework.decorators import action
 from rest_framework.exceptions import ValidationError
 from rest_framework.response import Response
 
-from apps.recipes.models import Ingredient, Recipe, Recipe_Ingredient
+from apps.recipes.models import Ingredient, Recipe, RecipeIngredient
 from apps.recipes.serializers import (
     IngredientSerializer,
     RecipeIngredientSerializer,
@@ -53,5 +53,5 @@ class RecipeIngredientView(
     mixins.DestroyModelMixin,
     viewsets.GenericViewSet,
 ):
-    queryset = Recipe_Ingredient.objects.select_related("ingredient")
+    queryset = RecipeIngredient.objects.select_related("ingredient")
     serializer_class = RecipeIngredientSerializer
