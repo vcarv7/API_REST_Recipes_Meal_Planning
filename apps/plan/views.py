@@ -15,7 +15,7 @@ class PlanViewSet(viewsets.ModelViewSet):
         return (
             Plan.objects.filter(user=self.request.user)
             .prefetch_related("meals__recipe")
-            .order_by("-start_Date", "-id")
+            .order_by("-start_date", "-id")
         )
 
     def perform_create(self, serializer):

@@ -21,38 +21,38 @@ class PlanModelTests(TestCase):
 
     def test_end_date_defaults_to_seven_days_after_start(self):
         plan = Plan.objects.create(user=self.user)
-        self.assertEqual(plan.end_Date, plan.start_Date.date() + timedelta(days=7))
+        self.assertEqual(plan.end_date, plan.start_date.date() + timedelta(days=7))
 
     def test_explicit_end_date_is_respected(self):
         fixed = date(2030, 1, 1)
-        plan = Plan.objects.create(user=self.user, end_Date=fixed)
-        self.assertEqual(plan.end_Date, fixed)
+        plan = Plan.objects.create(user=self.user, end_date=fixed)
+        self.assertEqual(plan.end_date, fixed)
 
     def test_duplicate_meal_in_same_slot_is_rejected(self):
         plan = Plan.objects.create(user=self.user)
         PlanMeal.objects.create(
-            plan=plan, recipe=self.recipe, date=plan.end_Date, meal_type="lunch"
+            plan=plan, recipe=self.recipe, date=plan.end_date, meal_type="lunch"
         )
         with self.assertRaises(IntegrityError):
             with transaction.atomic():
                 PlanMeal.objects.create(
-                    plan=plan, recipe=self.recipe, date=plan.end_Date, meal_type="lunch"
+                    plan=plan, recipe=self.recipe, date=plan.end_date, meal_type="lunch"
                 )
 
     def test_same_recipe_in_different_slot_is_allowed(self):
         plan = Plan.objects.create(user=self.user)
         PlanMeal.objects.create(
-            plan=plan, recipe=self.recipe, date=plan.end_Date, meal_type="lunch"
+            plan=plan, recipe=self.recipe, date=plan.end_date, meal_type="lunch"
         )
         PlanMeal.objects.create(
-            plan=plan, recipe=self.recipe, date=plan.end_Date, meal_type="dinner"
+            plan=plan, recipe=self.recipe, date=plan.end_date, meal_type="dinner"
         )
         self.assertEqual(plan.meals.count(), 2)
 
     def test_recipe_in_use_cannot_be_deleted(self):
         plan = Plan.objects.create(user=self.user)
         PlanMeal.objects.create(
-            plan=plan, recipe=self.recipe, date=plan.end_Date, meal_type="lunch"
+            plan=plan, recipe=self.recipe, date=plan.end_date, meal_type="lunch"
         )
         with self.assertRaises(ProtectedError):
             with transaction.atomic():
@@ -61,7 +61,7 @@ class PlanModelTests(TestCase):
     def test_deleting_plan_cascades_meals(self):
         plan = Plan.objects.create(user=self.user)
         PlanMeal.objects.create(
-            plan=plan, recipe=self.recipe, date=plan.end_Date, meal_type="lunch"
+            plan=plan, recipe=self.recipe, date=plan.end_date, meal_type="lunch"
         )
         plan.delete()
         self.assertEqual(PlanMeal.objects.count(), 0)

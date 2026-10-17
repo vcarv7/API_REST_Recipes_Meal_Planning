@@ -10,7 +10,7 @@ class PlanMealInline(admin.TabularInline):
 
 @admin.register(Plan)
 class PlanAdmin(admin.ModelAdmin):
-    list_display = ("id", "user", "start_Date", "end_Date")
+    list_display = ("id", "user", "start_date", "end_date")
     search_fields = ("user__username",)
-    date_hierarchy = "start_Date"
+    date_hierarchy = "start_date"
     inlines = [PlanMealInline]

@@ -28,7 +28,7 @@ class PlanMealSerializer(serializers.ModelSerializer):
         date_value = attrs.get("date") or (self.instance.date if self.instance else None)
         if plan is None or date_value is None:
             return attrs
-        if date_value < plan.start_Date.date() or (plan.end_Date and date_value > plan.end_Date):
+        if date_value < plan.start_date.date() or (plan.end_date and date_value > plan.end_date):
             raise serializers.ValidationError(
                 {"date": "La fecha debe estar dentro del rango del plan."}
             )
@@ -52,11 +52,11 @@ class PlanSerializer(serializers.ModelSerializer):
     """Plan owned by the requesting user.
 
     ``user`` is not a field: the view injects it from ``request.user``.
-    ``start_Date`` defaults to now and ``end_Date`` to start + 7 days.
+    ``start_date`` defaults to now and ``end_date`` to start + 7 days.
     """
 
     meals = PlanMealSerializer(many=True, read_only=True)
 
     class Meta:
         model = Plan
-        fields = ["id", "start_Date", "end_Date", "meals"]
+        fields = ["id", "start_date", "end_date", "meals"]
