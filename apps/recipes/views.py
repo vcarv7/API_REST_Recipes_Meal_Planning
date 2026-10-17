@@ -1,5 +1,7 @@
 from django.db.models import ProtectedError
 
+from drf_spectacular.utils import extend_schema
+
 from rest_framework import mixins, status, viewsets
 from rest_framework.decorators import action
 from rest_framework.exceptions import ValidationError
@@ -29,6 +31,15 @@ class RecipeViewSet(viewsets.ModelViewSet):
     def perform_create(self, serializer):
         serializer.save(created_by=self.request.user)
 
+    @extend_schema(
+        methods=["POST"],
+        request=RecipeIngredientSerializer,
+        responses={201: RecipeIngredientSerializer},
+    )
+    @extend_schema(
+        methods=["GET"],
+        responses=RecipeIngredientSerializer(many=True),
+    )
     @action(detail=True, methods=["get", "post"], url_path="recipe-ingredients")
     def recipe_ingredients(self, request, pk=None):
         recipe = self.get_object()
