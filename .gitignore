@@ -1,2 +1,31 @@
-.vscode/
+# Entornos y secretos
+.venv/
 .env
+
+# Python
+__pycache__/
+*.py[cod]
+
+# Empaquetado (Poetry)
+build/
+dist/
+*.egg-info/
+
+# Django
+*.sqlite3
+*.log
+
+# Tests y cobertura
+.pytest_cache/
+.coverage
+htmlcov/
+
+# Linters
+.mypy_cache/
+.ruff_cache/
+
+# Editores y sistema
+.vscode/
+.idea/
+.DS_Store
+Thumbs.db
