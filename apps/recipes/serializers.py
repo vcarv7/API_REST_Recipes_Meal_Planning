@@ -58,3 +58,11 @@ class RecipeSerializer(serializers.ModelSerializer):
             "servings",
             "recipe_ingredients",
         ]
+
+
+class RecipeSummarySerializer(serializers.ModelSerializer):
+    """Slim recipe representation for nesting in other resources."""
+
+    class Meta:
+        model = Recipe
+        fields = ["id", "name", "prep_time", "servings"]

@@ -1,5 +1,8 @@
+from django.db.models import ProtectedError
+
 from rest_framework import mixins, status, viewsets
 from rest_framework.decorators import action
+from rest_framework.exceptions import ValidationError
 from rest_framework.response import Response
 
 from apps.recipes.models import Ingredient, Recipe, Recipe_Ingredient
@@ -32,6 +35,14 @@ class RecipeViewSet(viewsets.ModelViewSet):
             return Response(serializer.data, status=status.HTTP_201_CREATED)
         lines = recipe.recipe_ingredients.select_related("ingredient")
         return Response(RecipeIngredientSerializer(lines, many=True).data)
+
+    def destroy(self, request, *args, **kwargs):
+        try:
+            return super().destroy(request, *args, **kwargs)
+        except ProtectedError:
+            raise ValidationError(
+                {"detail": "No se puede borrar: la receta está en uso en uno o más planes."}
+            )
 
 
 class RecipeIngredientView(
