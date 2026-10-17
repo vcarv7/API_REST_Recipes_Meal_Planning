@@ -97,3 +97,66 @@ class TokenAuthTests(APITestCase):
         client.credentials(HTTP_AUTHORIZATION="Bearer not-a-real-token")
         response = client.get("/api/plans/")
         self.assertEqual(response.status_code, 401)
+
+
+class RegisterApiTests(APITestCase):
+    def test_register_creates_user_with_hashed_password(self):
+        response = self.client.post(
+            "/api/auth/register/",
+            {
+                "username": "new_cook",
+                "password": "super-secret-123",
+                "email": "cook@example.com",
+                "country": "Venezuela",
+                "date_birth": "1995-05-05",
+            },
+            format="json",
+        )
+        self.assertEqual(response.status_code, 201)
+        user = User.objects.get(username="new_cook")
+        self.assertTrue(user.check_password("super-secret-123"))
+        self.assertNotIn("password", response.data)
+
+    def test_register_rejects_duplicate_username(self):
+        User.objects.create_user(
+            username="dup_cook",
+            password="super-secret-123",
+            country="Venezuela",
+            date_birth=date(1990, 1, 1),
+        )
+        response = self.client.post(
+            "/api/auth/register/",
+            {
+                "username": "dup_cook",
+                "password": "super-secret-123",
+                "country": "Venezuela",
+                "date_birth": "1995-05-05",
+            },
+            format="json",
+        )
+        self.assertEqual(response.status_code, 400)
+        self.assertIn("username", response.data)
+
+    def test_register_rejects_weak_password(self):
+        response = self.client.post(
+            "/api/auth/register/",
+            {
+                "username": "weak_cook",
+                "password": "123",
+                "country": "Venezuela",
+                "date_birth": "1995-05-05",
+            },
+            format="json",
+        )
+        self.assertEqual(response.status_code, 400)
+        self.assertIn("password", response.data)
+
+    def test_register_requires_country_and_date_birth(self):
+        response = self.client.post(
+            "/api/auth/register/",
+            {"username": "bare_cook", "password": "super-secret-123"},
+            format="json",
+        )
+        self.assertEqual(response.status_code, 400)
+        self.assertIn("country", response.data)
+        self.assertIn("date_birth", response.data)
