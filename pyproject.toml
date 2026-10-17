@@ -11,7 +11,8 @@ dependencies = [
     "django (>=6.1.1,<7.0.0)",
     "djangorestframework (>=3.18.1,<4.0.0)",
     "python-decouple (>=3.8,<4.0)",
-    "dj-database-url (>=3.1.2,<4.0.0)"
+    "dj-database-url (>=3.1.2,<4.0.0)",
+    "djangorestframework-simplejwt (>=5.5.1,<6.0.0)"
 ]
 
 

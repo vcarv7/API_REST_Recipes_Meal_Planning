@@ -23,9 +23,9 @@ class PlanApiTests(APITestCase):
     def setUp(self):
         self.client.force_authenticate(self.user_a)
 
-    def test_anonymous_access_is_forbidden(self):
+    def test_anonymous_access_is_unauthorized(self):
         response = APIClient().get("/api/plans/")
-        self.assertEqual(response.status_code, 403)
+        self.assertEqual(response.status_code, 401)
 
     def test_create_plan_without_body_uses_defaults(self):
         response = self.client.post("/api/plans/", {}, format="json")
