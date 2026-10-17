@@ -1,5 +1,7 @@
 from django.db import models
 
+from apps.user.models import User
+
 # Create your models here.
 
 class Recipe(models.Model):
@@ -7,6 +9,14 @@ class Recipe(models.Model):
     instructions = models.TextField(max_length=1000)
     prep_time = models.FloatField(help_text="Tiempo en Horas")
     servings =models.PositiveIntegerField(help_text="Numero de Porciones que rinde esta Receta", default=1)
+    created_by = models.ForeignKey(
+        User,
+        on_delete=models.SET_NULL,
+        null=True,
+        blank=True,
+        related_name="recipes",
+        help_text="Autor de la receta",
+    )
     
     def __str__(self):
         return f"{self.name}"
