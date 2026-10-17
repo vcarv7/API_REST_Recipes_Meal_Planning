@@ -22,9 +22,17 @@ class Ingredient(models.Model):
     
     
 class Recipe_Ingredient(models.Model):
-    recipe = models.ForeignKey(Recipe, on_delete=models.CASCADE, related_name="recipes")
-    ingredient = models.ForeignKey(Ingredient, on_delete=models.CASCADE, related_name="ingredient")
+    recipe = models.ForeignKey(Recipe, on_delete=models.CASCADE, related_name="recipe_ingredients")
+    ingredient = models.ForeignKey(Ingredient, on_delete=models.CASCADE, related_name="recipe_ingredients")
     quantity = models.PositiveIntegerField(help_text="Cantidad de recetas ingredientes")
+
+    class Meta:
+        constraints = [
+            models.UniqueConstraint(
+                fields=["recipe", "ingredient"],
+                name="unique_recipe_ingredient",
+            )
+        ]
     
     def __str__(self):
         return f"{self.recipe}:{self.ingredient}"
