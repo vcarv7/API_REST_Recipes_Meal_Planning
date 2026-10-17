@@ -28,6 +28,20 @@ class RecipeIngredientSerializer(serializers.ModelSerializer):
         model = Recipe_Ingredient
         fields = ["id", "ingredient", "ingredient_id", "quantity"]
 
+    def validate(self, attrs):
+        recipe = self.context.get("recipe") if self.instance is None else self.instance.recipe
+        ingredient = attrs.get("ingredient") or (self.instance.ingredient if self.instance else None)
+        if recipe is None or ingredient is None:
+            return attrs
+        duplicates = Recipe_Ingredient.objects.filter(recipe=recipe, ingredient=ingredient)
+        if self.instance is not None:
+            duplicates = duplicates.exclude(pk=self.instance.pk)
+        if duplicates.exists():
+            raise serializers.ValidationError(
+                {"ingredient_id": "Este ingrediente ya forma parte de la receta."}
+            )
+        return attrs
+
 
 class RecipeSerializer(serializers.ModelSerializer):
     """Recipe with its ingredient lines inlined as read-only nested data."""
