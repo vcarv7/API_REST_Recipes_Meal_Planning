@@ -14,12 +14,12 @@ from apps.recipes.serializers import (
 
 
 class IngredientViewSet(viewsets.ModelViewSet):
-    queryset = Ingredient.objects.all()
+    queryset = Ingredient.objects.order_by("name", "id")
     serializer_class = IngredientSerializer
 
 
 class RecipeViewSet(viewsets.ModelViewSet):
-    queryset = Recipe.objects.prefetch_related("recipe_ingredients__ingredient")
+    queryset = Recipe.objects.prefetch_related("recipe_ingredients__ingredient").order_by("name", "id")
     serializer_class = RecipeSerializer
 
     @action(detail=True, methods=["get", "post"], url_path="recipe-ingredients")
@@ -33,8 +33,10 @@ class RecipeViewSet(viewsets.ModelViewSet):
             serializer.is_valid(raise_exception=True)
             serializer.save(recipe=recipe)
             return Response(serializer.data, status=status.HTTP_201_CREATED)
-        lines = recipe.recipe_ingredients.select_related("ingredient")
-        return Response(RecipeIngredientSerializer(lines, many=True).data)
+        queryset = recipe.recipe_ingredients.select_related("ingredient").order_by("id")
+        page = self.paginate_queryset(queryset)
+        serializer = RecipeIngredientSerializer(page, many=True)
+        return self.get_paginated_response(serializer.data)
 
     def destroy(self, request, *args, **kwargs):
         try:

@@ -20,7 +20,19 @@ class IngredientApiTests(APITestCase):
     def test_list_ingredients(self):
         response = self.client.get("/api/ingredients/")
         self.assertEqual(response.status_code, 200)
-        self.assertEqual(len(response.data), 2)
+        self.assertEqual(response.data["count"], 2)
+        self.assertEqual(len(response.data["results"]), 2)
+
+    def test_ingredient_list_is_paginated(self):
+        for index in range(10):
+            Ingredient.objects.create(name=f"Extra {index}", unit="unidades")
+        first = self.client.get("/api/ingredients/")
+        self.assertEqual(first.data["count"], 12)
+        self.assertEqual(len(first.data["results"]), 10)
+        self.assertIsNotNone(first.data["next"])
+        second = self.client.get("/api/ingredients/?page=2")
+        self.assertEqual(len(second.data["results"]), 2)
+        self.assertIsNone(second.data["next"])
 
     def test_update_ingredient(self):
         response = self.client.patch(
@@ -143,3 +155,14 @@ class RecipeApiTests(APITestCase):
         response = self.client.delete(f"/api/recipe-ingredients/{line.pk}/")
         self.assertEqual(response.status_code, 204)
         self.assertEqual(Recipe_Ingredient.objects.count(), 0)
+
+    def test_recipe_lines_list_is_paginated(self):
+        for index in range(11):
+            extra = Ingredient.objects.create(name=f"Extra {index}", unit="unidades")
+            Recipe_Ingredient.objects.create(recipe=self.recipe, ingredient=extra, quantity=1)
+        first = self.client.get(f"/api/recipes/{self.recipe.pk}/recipe-ingredients/")
+        self.assertEqual(first.data["count"], 11)
+        self.assertEqual(len(first.data["results"]), 10)
+        second = self.client.get(f"/api/recipes/{self.recipe.pk}/recipe-ingredients/?page=2")
+        self.assertEqual(len(second.data["results"]), 1)
+        self.assertIsNone(second.data["next"])

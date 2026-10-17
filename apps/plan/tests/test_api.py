@@ -51,7 +51,7 @@ class PlanApiTests(APITestCase):
         Plan.objects.create(user=self.user_b)
         response = self.client.get("/api/plans/")
         self.assertEqual(response.status_code, 200)
-        self.assertEqual(len(response.data), 2)
+        self.assertEqual(response.data["count"], 2)
 
     def test_foreign_plan_detail_is_404(self):
         foreign = Plan.objects.create(user=self.user_b)
@@ -216,3 +216,18 @@ class PlanMealApiTests(APITestCase):
         response = self.client.delete(f"/api/recipes/{self.recipe.pk}/")
         self.assertEqual(response.status_code, 400)
         self.assertTrue(Recipe.objects.filter(pk=self.recipe.pk).exists())
+
+    def test_plan_meals_list_is_paginated(self):
+        meal_types = ["breakfast", "lunch", "dinner", "snack"]
+        for index in range(12):
+            PlanMeal.objects.create(
+                plan=self.plan,
+                recipe=self.recipe,
+                date=self.plan.start_Date.date() + timedelta(days=index // 4),
+                meal_type=meal_types[index % 4],
+            )
+        first = self.client.get(f"/api/plans/{self.plan.pk}/meals/")
+        self.assertEqual(first.data["count"], 12)
+        self.assertEqual(len(first.data["results"]), 10)
+        second = self.client.get(f"/api/plans/{self.plan.pk}/meals/?page=2")
+        self.assertEqual(len(second.data["results"]), 2)
