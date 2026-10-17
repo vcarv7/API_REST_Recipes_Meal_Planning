@@ -1,4 +1,5 @@
 from django.db import models
+from django.utils import timezone
 from apps.user.models import User
 from datetime import timedelta
 
@@ -6,7 +7,7 @@ from datetime import timedelta
 
 class Plan(models.Model):
     user = models.ForeignKey(User, on_delete=models.CASCADE, related_name='plans')
-    start_Date = models.DateTimeField(auto_now_add=True)
+    start_Date = models.DateTimeField(default=timezone.now)
     end_Date = models.DateField(blank=True, null=True)
     
     #   Sobreescribe el metodo save que django trae por defecto para agregar logica antes de
@@ -14,9 +15,9 @@ class Plan(models.Model):
     
     def save(self, *args, **kwargs): 
         if not self.end_Date:
-            self.end_Date = self.start_Date + timedelta(days=7)
+            self.end_Date = (self.start_Date + timedelta(days=7)).date()
         
-        # Lama al Metodo Padre para que guarde
+        # Llama al Metodo Padre para que guarde
         super().save( *args, **kwargs) 
         
     def __str__(self):
