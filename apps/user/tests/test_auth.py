@@ -160,3 +160,53 @@ class RegisterApiTests(APITestCase):
         self.assertEqual(response.status_code, 400)
         self.assertIn("country", response.data)
         self.assertIn("date_birth", response.data)
+
+
+class LogoutBlacklistTests(APITestCase):
+    @classmethod
+    def setUpTestData(cls):
+        cls.user = User.objects.create_user(
+            username="logout_user",
+            password="super-secret-123",
+            country="Venezuela",
+            date_birth=date(1990, 1, 1),
+        )
+
+    def _login(self):
+        return self.client.post(
+            "/api/auth/token/",
+            {"username": "logout_user", "password": "super-secret-123"},
+            format="json",
+        )
+
+    def test_logout_blacklists_refresh(self):
+        refresh = self._login().data["refresh"]
+        response = self.client.post(
+            "/api/auth/token/blacklist/", {"refresh": refresh}, format="json"
+        )
+        self.assertEqual(response.status_code, 200)
+        response = self.client.post(
+            "/api/auth/token/refresh/", {"refresh": refresh}, format="json"
+        )
+        self.assertEqual(response.status_code, 401)
+
+    def test_rotation_blacklists_previous_refresh(self):
+        old_refresh = self._login().data["refresh"]
+        rotated = self.client.post(
+            "/api/auth/token/refresh/", {"refresh": old_refresh}, format="json"
+        )
+        self.assertEqual(rotated.status_code, 200)
+        self.assertIn("refresh", rotated.data)
+        reuse = self.client.post(
+            "/api/auth/token/refresh/", {"refresh": old_refresh}, format="json"
+        )
+        self.assertEqual(reuse.status_code, 401)
+
+    def test_access_survives_logout_until_expiry(self):
+        login = self._login()
+        access, refresh = login.data["access"], login.data["refresh"]
+        self.client.post("/api/auth/token/blacklist/", {"refresh": refresh}, format="json")
+        client = APIClient()
+        client.credentials(HTTP_AUTHORIZATION=f"Bearer {access}")
+        response = client.get("/api/plans/")
+        self.assertEqual(response.status_code, 200)
