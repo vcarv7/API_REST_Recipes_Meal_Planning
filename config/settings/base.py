@@ -100,7 +100,9 @@ WSGI_APPLICATION = 'config.wsgi.application'
 
 DATABASES = {
     'default': dj_database_url.config(
-        default='sqlite:///db.sqlite3',
+        # decouple lee .env (con precedencia de variables de entorno reales);
+        # dj-database-url por si solo NO lee .env, solo os.environ.
+        default=config('DATABASE_URL', default='sqlite:///db.sqlite3'),
         conn_max_age=600,  # Mantener conexion abierta con la BD
     )
 }
