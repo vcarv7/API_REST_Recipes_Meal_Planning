@@ -49,6 +49,16 @@ REST_FRAMEWORK = {
         'rest_framework_simplejwt.authentication.JWTAuthentication',
         'rest_framework.authentication.SessionAuthentication',
     ],
+    'DEFAULT_THROTTLE_CLASSES': [
+        'rest_framework.throttling.AnonRateThrottle',
+        'rest_framework.throttling.UserRateThrottle',
+    ],
+    'DEFAULT_THROTTLE_RATES': {
+        'anon': config('THROTTLE_ANON_RATE', default='1000/day'),
+        'user': config('THROTTLE_USER_RATE', default='10000/day'),
+        'login': config('THROTTLE_LOGIN_RATE', default='10/min'),
+        'register': config('THROTTLE_REGISTER_RATE', default='10/hour'),
+    },
 }
 
 SPECTACULAR_SETTINGS = {

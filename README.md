@@ -163,6 +163,17 @@ Todos los listados responden el mismo sobre (10 elementos por página):
 {"count": 23, "next": ".../api/ingredients/?page=2", "previous": null, "results": [ ... ]}
 ```
 
+## Rate limiting
+
+| Scope | Límite por defecto |
+|-------|--------------------|
+| Anónimo | 1.000 peticiones/día |
+| Usuario autenticado | 10.000 peticiones/día |
+| Login (`/api/auth/token/`) | 10/min |
+| Registro (`/api/auth/register/`) | 10/hora |
+
+Al exceder el límite: `429` con header `Retry-After`. Los límites se ajustan por entorno con las variables `THROTTLE_*` (ver `.env.example`).
+
 ## Documentación interactiva
 
 - **Swagger UI**: `/api/docs/` — pega tu access en **Authorize** y prueba cualquier endpoint desde el navegador.
@@ -232,7 +243,7 @@ tests/          # tests transversales (documentación OpenAPI)
 - [x] Documentación OpenAPI (Swagger UI + ReDoc) y suite de 80 tests
 - [x] Settings por entorno + perfil de producción verificado
 - [x] Script de certificación de cliente (72 verificaciones)
-- [ ] Throttling del login (anti fuerza bruta)
+- [x] Throttling del login (anti fuerza bruta)
 - [ ] Email único en el registro
 - [x] Endpoint `/health`
 - [ ] CI con GitHub Actions

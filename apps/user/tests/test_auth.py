@@ -1,5 +1,7 @@
 from datetime import date
 
+from django.core.cache import cache
+
 from rest_framework.test import APIClient, APITestCase
 
 from apps.plan.models import Plan
@@ -15,6 +17,9 @@ class TokenAuthTests(APITestCase):
             country="Venezuela",
             date_birth=date(1990, 1, 1),
         )
+
+    def setUp(self):
+        cache.clear()
 
     def _obtain(self):
         return self.client.post(
@@ -100,6 +105,9 @@ class TokenAuthTests(APITestCase):
 
 
 class RegisterApiTests(APITestCase):
+    def setUp(self):
+        cache.clear()
+
     def test_register_creates_user_with_hashed_password(self):
         response = self.client.post(
             "/api/auth/register/",
@@ -172,6 +180,9 @@ class LogoutBlacklistTests(APITestCase):
             date_birth=date(1990, 1, 1),
         )
 
+    def setUp(self):
+        cache.clear()
+
     def _login(self):
         return self.client.post(
             "/api/auth/token/",
@@ -210,3 +221,48 @@ class LogoutBlacklistTests(APITestCase):
         client.credentials(HTTP_AUTHORIZATION=f"Bearer {access}")
         response = client.get("/api/plans/")
         self.assertEqual(response.status_code, 200)
+
+
+class ThrottleTests(APITestCase):
+    def setUp(self):
+        cache.clear()
+
+    def test_login_is_rate_limited(self):
+        User.objects.create_user(
+            username="throttle_user",
+            password="super-secret-123",
+            country="Venezuela",
+            date_birth=date(1990, 1, 1),
+        )
+        payload = {"username": "throttle_user", "password": "wrong-password"}
+        for _ in range(10):
+            response = self.client.post("/api/auth/token/", payload, format="json")
+            self.assertEqual(response.status_code, 401)
+        response = self.client.post("/api/auth/token/", payload, format="json")
+        self.assertEqual(response.status_code, 429)
+        self.assertIn("Retry-After", response.headers)
+
+    def test_register_is_rate_limited(self):
+        for index in range(10):
+            response = self.client.post(
+                "/api/auth/register/",
+                {
+                    "username": f"rate_reg_{index}",
+                    "password": "super-secret-123",
+                    "country": "Venezuela",
+                    "date_birth": "1990-01-01",
+                },
+                format="json",
+            )
+            self.assertEqual(response.status_code, 201)
+        response = self.client.post(
+            "/api/auth/register/",
+            {
+                "username": "rate_reg_extra",
+                "password": "super-secret-123",
+                "country": "Venezuela",
+                "date_birth": "1990-01-01",
+            },
+            format="json",
+        )
+        self.assertEqual(response.status_code, 429)
