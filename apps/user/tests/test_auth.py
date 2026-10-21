@@ -169,6 +169,106 @@ class RegisterApiTests(APITestCase):
         self.assertIn("country", response.data)
         self.assertIn("date_birth", response.data)
 
+    def test_register_rejects_duplicate_email(self):
+        User.objects.create_user(
+            username="email_owner",
+            password="super-secret-123",
+            email="cook@example.com",
+            country="Venezuela",
+            date_birth=date(1990, 1, 1),
+        )
+        response = self.client.post(
+            "/api/auth/register/",
+            {
+                "username": "email_dup",
+                "password": "super-secret-123",
+                "email": "cook@example.com",
+                "country": "Venezuela",
+                "date_birth": "1995-05-05",
+            },
+            format="json",
+        )
+        self.assertEqual(response.status_code, 400)
+        self.assertIn("email", response.data)
+
+    def test_register_rejects_duplicate_email_case_insensitive(self):
+        User.objects.create_user(
+            username="email_owner2",
+            password="super-secret-123",
+            email="cook@example.com",
+            country="Venezuela",
+            date_birth=date(1990, 1, 1),
+        )
+        response = self.client.post(
+            "/api/auth/register/",
+            {
+                "username": "email_dup2",
+                "password": "super-secret-123",
+                "email": "COOK@Example.COM",
+                "country": "Venezuela",
+                "date_birth": "1995-05-05",
+            },
+            format="json",
+        )
+        self.assertEqual(response.status_code, 400)
+        self.assertIn("email", response.data)
+
+    def test_register_without_email_is_allowed(self):
+        first = self.client.post(
+            "/api/auth/register/",
+            {
+                "username": "no_mail_1",
+                "password": "super-secret-123",
+                "country": "Venezuela",
+                "date_birth": "1995-05-05",
+            },
+            format="json",
+        )
+        second = self.client.post(
+            "/api/auth/register/",
+            {
+                "username": "no_mail_2",
+                "password": "super-secret-123",
+                "country": "Venezuela",
+                "date_birth": "1995-05-05",
+            },
+            format="json",
+        )
+        self.assertEqual(first.status_code, 201)
+        self.assertEqual(second.status_code, 201)
+        self.assertIsNone(User.objects.get(username="no_mail_1").email)
+        self.assertIsNone(User.objects.get(username="no_mail_2").email)
+
+    def test_register_normalizes_email(self):
+        response = self.client.post(
+            "/api/auth/register/",
+            {
+                "username": "norm_mail",
+                "password": "super-secret-123",
+                "email": "Cook@Example.COM",
+                "country": "Venezuela",
+                "date_birth": "1995-05-05",
+            },
+            format="json",
+        )
+        self.assertEqual(response.status_code, 201)
+        self.assertEqual(User.objects.get(username="norm_mail").email, "cook@example.com")
+
+    def test_register_with_empty_email_is_allowed(self):
+        response = self.client.post(
+            "/api/auth/register/",
+            {
+                "username": "empty_mail",
+                "password": "super-secret-123",
+                "email": "",
+                "country": "Venezuela",
+                "date_birth": "1995-05-05",
+            },
+            format="json",
+        )
+        self.assertEqual(response.status_code, 201)
+        self.assertIsNone(User.objects.get(username="empty_mail").email)
+
 
 class LogoutBlacklistTests(APITestCase):
     @classmethod

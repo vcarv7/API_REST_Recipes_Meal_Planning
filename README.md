@@ -73,7 +73,7 @@ poetry run python manage.py runserver
 
 | Método | Ruta | Descripción |
 |--------|------|-------------|
-| POST | `/api/auth/register/` | Crea usuario: `username`, `password`, `email?`, `country`, `date_birth` |
+| POST | `/api/auth/register/` | Crea usuario: `username`, `password`, `email?` (único), `country`, `date_birth` |
 | POST | `/api/auth/token/` | Login → `{access, refresh}` |
 | POST | `/api/auth/token/refresh/` | Nuevo access (y refresh rotado) |
 | POST | `/api/auth/token/verify/` | Valida un token |
@@ -244,7 +244,7 @@ tests/          # tests transversales (documentación OpenAPI)
 - [x] Settings por entorno + perfil de producción verificado
 - [x] Script de certificación de cliente (72 verificaciones)
 - [x] Throttling del login (anti fuerza bruta)
-- [ ] Email único en el registro
+- [x] Email único en el registro
 - [x] Endpoint `/health`
 - [ ] CI con GitHub Actions
 - [ ] Deploy (PaaS o VPS)
