@@ -8,6 +8,7 @@ from rest_framework.exceptions import ValidationError
 from rest_framework.permissions import IsAuthenticatedOrReadOnly
 from rest_framework.response import Response
 
+from apps.core.mixins import IdempotentCreateMixin
 from apps.recipes.models import Ingredient, Recipe, RecipeIngredient
 from apps.recipes.permissions import IsOwnerOrReadOnly
 from apps.recipes.serializers import (
@@ -17,13 +18,13 @@ from apps.recipes.serializers import (
 )
 
 
-class IngredientViewSet(viewsets.ModelViewSet):
+class IngredientViewSet(IdempotentCreateMixin, viewsets.ModelViewSet):
     queryset = Ingredient.objects.order_by("name", "id")
     serializer_class = IngredientSerializer
     permission_classes = [IsAuthenticatedOrReadOnly]
 
 
-class RecipeViewSet(viewsets.ModelViewSet):
+class RecipeViewSet(IdempotentCreateMixin, viewsets.ModelViewSet):
     queryset = Recipe.objects.prefetch_related("recipe_ingredients__ingredient").order_by("name", "id")
     serializer_class = RecipeSerializer
     permission_classes = [IsAuthenticatedOrReadOnly, IsOwnerOrReadOnly]

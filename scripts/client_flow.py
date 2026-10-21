@@ -31,7 +31,7 @@ class FlowError(Exception):
     pass
 
 
-def request(method, path, *, token=None, body=None):
+def request(method, path, *, token=None, body=None, headers=None):
     """Realiza la peticion y devuelve (status, data) sin lanzar por HTTP >= 400."""
     url = f"{BASE_URL}{path}"
     data = json.dumps(body).encode() if body is not None else None
@@ -40,6 +40,8 @@ def request(method, path, *, token=None, body=None):
         req.add_header("Content-Type", "application/json")
     if token:
         req.add_header("Authorization", f"Bearer {token}")
+    for header_name, header_value in (headers or {}).items():
+        req.add_header(header_name, header_value)
     try:
         with urllib.request.urlopen(req, timeout=10) as response:
             raw = response.read()
@@ -295,6 +297,26 @@ def main():
     check("G12 el ingrediente borrado da 404", status, 404)
     status, _ = request("DELETE", f"/api/ingredients/{ing2_id}/", token=new_access)
     check("G13 eliminar ingrediente 2", status, 204)
+
+    banner("Fase H: salud e idempotencia")
+    status, body = request("GET", "/health")
+    check("H1 /health responde ok", status, 200)
+    check("H1b la base de datos esta arriba", (body or {}).get("database"), "up")
+
+    idem_payload = {
+        "name": f"Idem-flow-{stamp}",
+        "instructions": "Prueba de idempotencia.",
+        "prep_time": 0.2,
+        "servings": 2,
+    }
+    idem_headers = {"Idempotency-Key": f"flow-{stamp}"}
+    status, body = request("POST", "/api/recipes/", token=new_access, body=idem_payload, headers=idem_headers)
+    must("H2 crear receta con Idempotency-Key", status, 201)
+    idem_recipe_id = body["id"]
+    status, body = request("POST", "/api/recipes/", token=new_access, body=idem_payload, headers=idem_headers)
+    check("H3 el reintento devuelve la MISMA receta", (status, body.get("id")) == (201, idem_recipe_id), True)
+    status, _ = request("DELETE", f"/api/recipes/{idem_recipe_id}/", token=new_access)
+    check("H4 limpieza de la receta idempotente", status, 204)
 
     print("\n==============================================")
     total = ok_count + fail_count

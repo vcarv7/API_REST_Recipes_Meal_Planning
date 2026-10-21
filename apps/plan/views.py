@@ -5,11 +5,12 @@ from rest_framework.decorators import action
 from rest_framework.permissions import IsAuthenticated
 from rest_framework.response import Response
 
+from apps.core.mixins import IdempotentCreateMixin
 from apps.plan.models import Plan, PlanMeal
 from apps.plan.serializers import PlanMealSerializer, PlanSerializer
 
 
-class PlanViewSet(viewsets.ModelViewSet):
+class PlanViewSet(IdempotentCreateMixin, viewsets.ModelViewSet):
     serializer_class = PlanSerializer
     permission_classes = [IsAuthenticated]
 

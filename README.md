@@ -174,6 +174,20 @@ Todos los listados responden el mismo sobre (10 elementos por página):
 
 Al exceder el límite: `429` con header `Retry-After`. Los límites se ajustan por entorno con las variables `THROTTLE_*` (ver `.env.example`).
 
+## Idempotencia (reintentos seguros)
+
+Los `POST` de creación (recetas, ingredientes y planes) aceptan el header `Idempotency-Key`. Si un cliente reintenta tras un timeout:
+
+- **misma petición + misma key** → replay de la respuesta original con `Idempotent-Replayed: true` (no se duplica nada);
+- **otra petición con la misma key** → `422`.
+
+```bash
+curl -s -X POST $BASE/api/recipes/ -H "Authorization: Bearer $TOKEN" \
+  -H "Content-Type: application/json" -H "Idempotency-Key: 6f1c2a9d" -d '{ ... }'
+```
+
+Los registros se limpian con `poetry run python manage.py cleanup_idempotency` (cron sugerido: diario).
+
 ## Documentación interactiva
 
 - **Swagger UI**: `/api/docs/` — pega tu access en **Authorize** y prueba cualquier endpoint desde el navegador.
@@ -196,7 +210,7 @@ poetry run python manage.py spectacular --file schema.yml --validate
 
 ```bash
 poetry run python manage.py test                          # 80 tests (suite formal)
-poetry run python scripts/client_flow.py                  # 72 verificaciones HTTP de punta a punta
+poetry run python scripts/client_flow.py                  # 77 verificaciones HTTP de punta a punta
 poetry run python scripts/client_flow.py https://tu-api   # el mismo flujo contra cualquier URL
 ```
 
@@ -242,10 +256,11 @@ tests/          # tests transversales (documentación OpenAPI)
 - [x] Paginación uniforme y estable
 - [x] Documentación OpenAPI (Swagger UI + ReDoc) y suite de 80 tests
 - [x] Settings por entorno + perfil de producción verificado
-- [x] Script de certificación de cliente (72 verificaciones)
+- [x] Script de certificación de cliente (77 verificaciones)
 - [x] Throttling del login (anti fuerza bruta)
 - [x] Email único en el registro
 - [x] Endpoint `/health`
+- [x] Idempotencia de creación (Idempotency-Key)
 - [ ] CI con GitHub Actions
 - [ ] Deploy (PaaS o VPS)
 - [ ] Lista de compras + escalado de porciones
