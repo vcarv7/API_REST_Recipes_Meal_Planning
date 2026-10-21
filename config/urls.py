@@ -19,8 +19,12 @@ from django.urls import include, path
 
 from drf_spectacular.views import SpectacularAPIView, SpectacularRedocView, SpectacularSwaggerView
 
+from apps.core.views import HealthView
+
 urlpatterns = [
     path('admin/', admin.site.urls),
+    path('health/', HealthView.as_view(), name='health'),
+    path('health', HealthView.as_view()),
     path('api/', include('apps.recipes.urls')),
     path('api/', include('apps.plan.urls')),
     path('api/', include('apps.user.urls')),

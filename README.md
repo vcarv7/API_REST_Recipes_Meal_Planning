@@ -47,6 +47,7 @@ poetry run python manage.py runserver
 |-----|---------|
 | http://127.0.0.1:8000/api/ | La API |
 | http://127.0.0.1:8000/api/docs/ | **Swagger UI** (interactiva, con botón Authorize) |
+| http://127.0.0.1:8000/health | Estado de la API (check de base de datos) |
 | http://127.0.0.1:8000/admin/ | Admin de Django |
 
 ## Variables de entorno
@@ -233,7 +234,7 @@ tests/          # tests transversales (documentación OpenAPI)
 - [x] Script de certificación de cliente (72 verificaciones)
 - [ ] Throttling del login (anti fuerza bruta)
 - [ ] Email único en el registro
-- [ ] Endpoint `/health`
+- [x] Endpoint `/health`
 - [ ] CI con GitHub Actions
 - [ ] Deploy (PaaS o VPS)
 - [ ] Lista de compras + escalado de porciones

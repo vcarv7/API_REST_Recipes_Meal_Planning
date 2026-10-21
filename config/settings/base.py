@@ -28,7 +28,8 @@ DJANGO_APPS = [
 LOCAL_APPS = [
     'apps.user',
     'apps.recipes',
-    'apps.plan'
+    'apps.plan',
+    'apps.core',
 ]
 
 EXTERNAL_APPS = [
