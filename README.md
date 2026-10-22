@@ -176,9 +176,10 @@ Al exceder el límite: `429` con header `Retry-After`. Los límites se ajustan p
 
 ## Idempotencia (reintentos seguros)
 
-Los `POST` de creación (recetas, ingredientes y planes) aceptan el header `Idempotency-Key`. Si un cliente reintenta tras un timeout:
+Los `POST` de creación (recetas, ingredientes y planes) aceptan el header `Idempotency-Key`. El servidor **reserva la key antes de crear** (claim-then-execute): dos requests simultáneos con la misma key nunca duplican datos. Si un cliente reintenta:
 
 - **misma petición + misma key** → replay de la respuesta original con `Idempotent-Replayed: true` (no se duplica nada);
+- **misma petición mientras la original sigue en curso** → `409` con `Retry-After: 1`: reintenta en un segundo y obtendrás el replay;
 - **otra petición con la misma key** → `422`.
 
 ```bash
@@ -186,7 +187,7 @@ curl -s -X POST $BASE/api/recipes/ -H "Authorization: Bearer $TOKEN" \
   -H "Content-Type: application/json" -H "Idempotency-Key: 6f1c2a9d" -d '{ ... }'
 ```
 
-Los registros se limpian con `poetry run python manage.py cleanup_idempotency` (cron sugerido: diario).
+Una reserva abandonada (caída del servidor entre reservar y completar) se recupera automáticamente a los 120 segundos. Los registros se limpian con `poetry run python manage.py cleanup_idempotency` (cron sugerido: diario).
 
 ## Documentación interactiva
 
