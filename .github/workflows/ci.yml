@@ -1,0 +1,29 @@
+name: CI
+
+on:
+  push:
+    branches: [DevAll, main]
+  pull_request:
+
+jobs:
+  quality:
+    runs-on: ubuntu-latest
+    env:
+      # Valores EXCLUSIVOS de CI (no son secretos reales)
+      SECRET_KEY: "ci-only-secret-key-0123456789abcdefghijklmnopqrstuvwxyz-ABCDEFGHIJKLMNOPQRSTUVWXYZ"
+      ALLOWED_HOSTS: "localhost,127.0.0.1"
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-python@v5
+        with:
+          python-version: "3.14"
+      - name: Instalar Poetry
+        run: pipx install poetry
+      - name: Instalar dependencias
+        run: poetry install --no-interaction
+      - name: Tests
+        run: poetry run python manage.py test
+      - name: Validar schema OpenAPI
+        run: poetry run python manage.py spectacular --file schema.yml --validate --fail-on-warn
+      - name: Check del perfil de produccion
+        run: poetry run python manage.py check --deploy --settings=config.settings.produccion
