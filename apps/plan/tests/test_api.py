@@ -17,15 +17,19 @@ class PlanApiTests(APITestCase):
             username="plan_api_b", password="x", country="Venezuela", date_birth=date(1991, 2, 2)
         )
         cls.recipe = Recipe.objects.create(
-            name="Tortilla", instructions="Batir y cuajar.", prep_time=0.5, servings=4
+            name="Tortilla",
+            instructions="Batir y cuajar.",
+            prep_time=0.5,
+            servings=4,
+            created_by=cls.user_a,
         )
 
     def setUp(self):
         self.client.force_authenticate(self.user_a)
 
-    def test_anonymous_access_is_forbidden(self):
+    def test_anonymous_access_is_unauthorized(self):
         response = APIClient().get("/api/plans/")
-        self.assertEqual(response.status_code, 403)
+        self.assertEqual(response.status_code, 401)
 
     def test_create_plan_without_body_uses_defaults(self):
         response = self.client.post("/api/plans/", {}, format="json")
@@ -92,7 +96,11 @@ class PlanMealApiTests(APITestCase):
             username="meal_api_b", password="x", country="Venezuela", date_birth=date(1991, 2, 2)
         )
         cls.recipe = Recipe.objects.create(
-            name="Tortilla", instructions="Batir y cuajar.", prep_time=0.5, servings=4
+            name="Tortilla",
+            instructions="Batir y cuajar.",
+            prep_time=0.5,
+            servings=4,
+            created_by=cls.user_a,
         )
 
     def setUp(self):

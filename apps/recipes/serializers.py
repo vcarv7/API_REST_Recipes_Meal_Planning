@@ -56,8 +56,10 @@ class RecipeSerializer(serializers.ModelSerializer):
             "instructions",
             "prep_time",
             "servings",
+            "created_by",
             "recipe_ingredients",
         ]
+        read_only_fields = ["created_by"]
 
 
 class RecipeSummarySerializer(serializers.ModelSerializer):

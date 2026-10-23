@@ -1,11 +1,16 @@
 from django.db.models import ProtectedError
 
+from drf_spectacular.utils import extend_schema
+
 from rest_framework import mixins, status, viewsets
 from rest_framework.decorators import action
 from rest_framework.exceptions import ValidationError
+from rest_framework.permissions import IsAuthenticatedOrReadOnly
 from rest_framework.response import Response
 
+from apps.core.mixins import IdempotentCreateMixin
 from apps.recipes.models import Ingredient, Recipe, RecipeIngredient
+from apps.recipes.permissions import IsOwnerOrReadOnly
 from apps.recipes.serializers import (
     IngredientSerializer,
     RecipeIngredientSerializer,
@@ -13,15 +18,29 @@ from apps.recipes.serializers import (
 )
 
 
-class IngredientViewSet(viewsets.ModelViewSet):
+class IngredientViewSet(IdempotentCreateMixin, viewsets.ModelViewSet):
     queryset = Ingredient.objects.order_by("name", "id")
     serializer_class = IngredientSerializer
+    permission_classes = [IsAuthenticatedOrReadOnly]
 
 
-class RecipeViewSet(viewsets.ModelViewSet):
+class RecipeViewSet(IdempotentCreateMixin, viewsets.ModelViewSet):
     queryset = Recipe.objects.prefetch_related("recipe_ingredients__ingredient").order_by("name", "id")
     serializer_class = RecipeSerializer
+    permission_classes = [IsAuthenticatedOrReadOnly, IsOwnerOrReadOnly]
 
+    def perform_create(self, serializer):
+        serializer.save(created_by=self.request.user)
+
+    @extend_schema(
+        methods=["POST"],
+        request=RecipeIngredientSerializer,
+        responses={201: RecipeIngredientSerializer},
+    )
+    @extend_schema(
+        methods=["GET"],
+        responses=RecipeIngredientSerializer(many=True),
+    )
     @action(detail=True, methods=["get", "post"], url_path="recipe-ingredients")
     def recipe_ingredients(self, request, pk=None):
         recipe = self.get_object()
@@ -55,3 +74,4 @@ class RecipeIngredientView(
 ):
     queryset = RecipeIngredient.objects.select_related("ingredient")
     serializer_class = RecipeIngredientSerializer
+    permission_classes = [IsAuthenticatedOrReadOnly, IsOwnerOrReadOnly]
