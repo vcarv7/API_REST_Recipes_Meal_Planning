@@ -37,6 +37,8 @@ EXTERNAL_APPS = [
    'rest_framework_simplejwt',
    'rest_framework_simplejwt.token_blacklist',
    'drf_spectacular',
+   # Assets locales de Swagger UI y ReDoc: sin CDN, collectstatic los descubre.
+   'drf_spectacular_sidecar',
 ]
 
 INSTALLED_APPS = DJANGO_APPS + LOCAL_APPS + EXTERNAL_APPS
@@ -67,6 +69,10 @@ SPECTACULAR_SETTINGS = {
     'VERSION': '1.0.0',
     'SERVE_INCLUDE_SCHEMA': False,
     'COMPONENT_SPLIT_REQUEST': True,
+    # Swagger UI y ReDoc servidos por la propia app (drf_spectacular_sidecar).
+    'SWAGGER_UI_DIST': 'SIDECAR',
+    'SWAGGER_UI_FAVICON_HREF': 'SIDECAR',
+    'REDOC_DIST': 'SIDECAR',
     'SWAGGER_UI_SETTINGS': {'persistAuthorization': True},
 }
 

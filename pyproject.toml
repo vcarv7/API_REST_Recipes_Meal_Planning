@@ -16,7 +16,8 @@ dependencies = [
     "drf-spectacular (>=0.30.0,<0.31.0)",
     "gunicorn (>=26.2.0,<27.0.0)",
     "whitenoise (>=6.12.0,<7.0.0)",
-    "psycopg[binary] (>=3.3.6,<4.0.0)"
+    "psycopg[binary] (>=3.3.6,<4.0.0)",
+    "drf-spectacular-sidecar (>=2026.10.1,<2027.0.0)"
 ]
 
 

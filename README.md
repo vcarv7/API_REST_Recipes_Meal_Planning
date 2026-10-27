@@ -205,6 +205,8 @@ Una reserva abandonada (caída del servidor entre reservar y completar) se recup
 poetry run python manage.py spectacular --file schema.yml --validate
 ```
 
+> Los assets de Swagger UI y ReDoc se sirven desde los estáticos de la propia app (`drf-spectacular-sidecar` + Whitenoise), no desde el CDN de jsdelivr. ReDoc aún referencia Google Fonts: si no hay acceso, usa las fuentes del sistema sin romper la página.
+
 ## Permisos
 
 | Quién | Leer recetas/ingredientes | Escribir recetas | Planes |

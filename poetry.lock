@@ -129,6 +129,21 @@ offline = ["drf-spectacular-sidecar"]
 sidecar = ["drf-spectacular-sidecar"]
 
 [[package]]
+name = "drf-spectacular-sidecar"
+version = "2026.10.1"
+description = "Serve self-contained distribution builds of Swagger UI and Redoc with Django"
+optional = false
+python-versions = ">=3.6"
+groups = ["main"]
+files = [
+    {file = "drf_spectacular_sidecar-2026.10.1-py3-none-any.whl", hash = "sha256:fe1d005d8ac9b5d0472f2fe5deeb2e7d6dcffaa24118044f22578b4b8c4b31f2"},
+    {file = "drf_spectacular_sidecar-2026.10.1.tar.gz", hash = "sha256:ec8d20b2594e8a10ebf22e5bab62ec313c7cf8793753a050290b209e16e81c9c"},
+]
+
+[package.dependencies]
+Django = ">=2.2"
+
+[[package]]
 name = "gunicorn"
 version = "26.2.0"
 description = "WSGI HTTP Server for UNIX"
@@ -621,4 +636,4 @@ brotli = ["brotli"]
 [metadata]
 lock-version = "2.1"
 python-versions = ">=3.14"
-content-hash = "1c12bea2fe3a45a98aa8e82c5e70a6e41445e01df9d019fac0b9b13bbc9c8494"
+content-hash = "317b850077ad58274be3b1d0f7268d9a3e194773e2e4c45d526f24bcb2785070"
