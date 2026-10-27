@@ -245,7 +245,7 @@ poetry run python manage.py check --deploy --settings=config.settings.produccion
 
 La app ya trae el stack de produccion: `gunicorn` + `whitenoise` + `psycopg`, y el perfil `produccion` (DEBUG fijo en `False`, HTTPS/cookies/HSTS, SMTP, logs a stdout).
 
-1. Crea el proyecto en Railway → *Deploy from GitHub repo* → rama `DevAll`.
+1. Crea el proyecto en Railway → *Deploy from GitHub repo* → rama `main`.
 2. Añade el plugin **PostgreSQL** (inyecta `DATABASE_URL` automáticamente).
 3. Variables del servicio:
 
