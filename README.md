@@ -7,6 +7,12 @@ Pensada para que cualquier aplicación cliente (web, móvil, script) pueda auten
 
 ---
 
+![Swagger UI de la API](docs/screenshots/swagger-ui.png)
+
+*Documentación interactiva en `/api/docs/`: todos los endpoints con su método, esquema de entrada y permisos, y el botón `Authorize` para probarlos con un JWT.*
+
+---
+
 ## ¿Qué puedes hacer con esta API?
 
 - **Catálogo de recetas**: crear recetas con instrucciones, tiempo de preparación (horas) y porciones.
@@ -199,6 +205,8 @@ Una reserva abandonada (caída del servidor entre reservar y completar) se recup
 poetry run python manage.py spectacular --file schema.yml --validate
 ```
 
+> Los assets de Swagger UI y ReDoc se sirven desde los estáticos de la propia app (`drf-spectacular-sidecar` + Whitenoise), no desde el CDN de jsdelivr. ReDoc aún referencia Google Fonts: si no hay acceso, usa las fuentes del sistema sin romper la página.
+
 ## Permisos
 
 | Quién | Leer recetas/ingredientes | Escribir recetas | Planes |
@@ -232,6 +240,35 @@ config/settings/
 ```bash
 poetry run python manage.py check --deploy --settings=config.settings.produccion
 ```
+
+## Deploy en PaaS (Railway)
+
+La app ya trae el stack de produccion: `gunicorn` + `whitenoise` + `psycopg`, y el perfil `produccion` (DEBUG fijo en `False`, HTTPS/cookies/HSTS, SMTP, logs a stdout).
+
+1. Crea el proyecto en Railway → *Deploy from GitHub repo* → rama `DevAll`.
+2. Añade el plugin **PostgreSQL** (inyecta `DATABASE_URL` automáticamente).
+3. Variables del servicio:
+
+| Variable | Valor |
+|----------|-------|
+| `SECRET_KEY` | nueva, generada para producción |
+| `ALLOWED_HOSTS` | `tu-app.up.railway.app` |
+| `CSRF_TRUSTED_ORIGINS` | `https://tu-app.up.railway.app` |
+| `EMAIL_*` | cuando configures SMTP real |
+| `PYTHON_VERSION` | `3.14` (si el builder lo pide; también existe `.python-version`) |
+
+4. Start command:
+
+   ```bash
+   poetry run python manage.py migrate --noinput && poetry run python manage.py collectstatic --noinput && poetry run gunicorn config.wsgi:application -c gunicorn.conf.py
+   ```
+
+5. Crea el superusuario desde la consola del servicio: `poetry run python manage.py createsuperuser`.
+6. Verifica en producción: `/health` → 200, `/api/docs/`, y el flujo completo de cliente:
+
+   ```bash
+   poetry run python scripts/client_flow.py https://tu-app.up.railway.app
+   ```
 
 ## Estructura del proyecto
 
